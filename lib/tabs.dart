@@ -1,6 +1,4 @@
-import 'package:diplom/blocs/user_bloc.dart';
-import 'package:diplom/events/user_events.dart';
-import 'package:diplom/repositories/user_repository.dart';
+import 'package:diplom/screens/chat.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -13,15 +11,13 @@ import 'package:diplom/screens/map.dart';
 import 'package:diplom/screens/profile.dart';
 import 'package:diplom/screens/search_book.dart';
 
-const tabs = [
-  Home(),
-
-  // Search(),
-  SearchBook(),
-  MapScreen(),
-  CreateBookScreen(),
-  // ProfileScreen(),
-  ProfilePage()
+var tabs = [
+  const Home(),
+  const SearchBook(),
+  const MapScreen(),
+  const CreateBookScreen(),
+  const ChatScreen(),
+  const ProfilePage(),
 ];
 
 class Tabs extends StatefulWidget {
@@ -34,33 +30,27 @@ class Tabs extends StatefulWidget {
 class _Tabs extends State<Tabs> {
   int _page = 0;
   late final BookRepository _bookRepository;
-  late final UserRepository _userRepository;
 
   @override
   void initState() {
     super.initState();
     _bookRepository = BookRepository();
-    _userRepository = UserRepository();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey.shade100,
       body: MultiRepositoryProvider(
         providers: [
           RepositoryProvider<BookRepository>(create: (context) => BookRepository()),
-          RepositoryProvider<UserRepository>(create: (context) => UserRepository()),
         ],
         child: MultiBlocProvider(
           providers: [
             BlocProvider<BookBloc>(
               create: (BuildContext context) => BookBloc(bookRepository: _bookRepository)
-                ..add(const GetBooks('5'))
+                ..add(const GetBooks(page: '1'))
                 ..add(GetCategories()),
-            ),
-            BlocProvider<UserBloc>(
-              create: (BuildContext context) =>
-                  UserBloc(userRepository: _userRepository)..add(GetUserBooks()),
             ),
           ],
           child: tabs[_page],
@@ -95,11 +85,16 @@ class _Tabs extends State<Tabs> {
               size: 25,
             ),
             backgroundColor: Colors.white,
-            label: 'Г-зураг',
+            label: 'Танд ойр',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.add_box_outlined, size: 25),
             label: 'Ном нэмэх',
+            backgroundColor: Colors.white,
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chat, size: 25),
+            label: 'Чат',
             backgroundColor: Colors.white,
           ),
           BottomNavigationBarItem(

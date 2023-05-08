@@ -6,24 +6,40 @@ import 'package:http/http.dart';
 
 class BookRepository {
   // String userUrl = 'http://localhost:8000/api/books';
-
+  String limit = '25';
   String userUrl =
-      'http://localhost:8000/api/books?select=title author id description location latitude longitude image userId&limit=10';
+      'http://localhost:8000/api/books?select=title author id description location latitude longitude image userId createdAt';
 
-  Future<List<Book>> getBooks({String? CategoryID}) async {
+  Future<List<Book>> getBooks({
+    int? categoryId,
+    int? userId,
+    String? latitude,
+    String? longitude,
+    String? title,
+    String? page,
+  }) async {
+    String url = userUrl;
+    if (userId != null) {
+      url = '$userUrl&userId=$userId';
+    }
+    if (latitude != null && longitude != null) {
+      url = '$userUrl&page=$page!&limit=$limit&latitude=$latitude&longitude=$longitude';
+    }
+    if (categoryId != null) {
+      url = '$userUrl&page=$page!&categoryId=$categoryId';
+    }
+    print(url);
+
     Response response = await get(
-      Uri.parse(userUrl),
+      Uri.parse(url),
     );
-    print(response.statusCode);
 
     if (response.statusCode == 200) {
       List data = json.decode(response.body)['data'];
-      print(data.length);
-      print(data.first);
+      // print(data);
 
       List<Book> books = data.map((val) => Book.fromMap(val)).toList();
-      print('=====books');
-      print(books);
+      print(books.length);
       return books;
     } else {
       throw Exception(response.reasonPhrase);
@@ -45,7 +61,6 @@ class BookRepository {
     Response response = await get(
       Uri.parse('http://localhost:8000/api/categories?select=name id exchangeCount&limit=10'),
     );
-    // print(response.body);
     if (response.statusCode == 200) {
       List data = json.decode(response.body)['data'];
 
@@ -64,6 +79,8 @@ class BookRepository {
     required String longitude,
     required String latitude,
     required String image,
+    required String categoryId,
+    required String userId,
   }) async {
     Response response = await post(
       Uri.parse(
@@ -78,14 +95,13 @@ class BookRepository {
         'latitude': latitude,
         'longitude': longitude,
         'image': image,
-        'userId': '2',
+        'categoryId': categoryId,
+        'userId': userId,
       }),
     );
-    print(response.body);
     if (response.statusCode == 200) {
       var data = json.decode(response.body)['data'];
       Book book = Book.fromMap(data);
-      print(book);
 
       return book;
     } else {

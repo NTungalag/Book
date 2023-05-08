@@ -28,10 +28,14 @@ class BookBloc extends Bloc<BookEvent, BookState> {
   ) async {
     emit(state.copyWith(status: BookStatus.loading));
     try {
-      print(5555555555);
-
-      var books = await _bookRepository.getBooks();
-      // print(books);
+      var books = await _bookRepository.getBooks(
+        title: event.title,
+        userId: event.userId,
+        categoryId: event.categoryId,
+        latitude: event.latitude,
+        longitude: event.longitude,
+        page: event.page,
+      );
       emit(state.copyWith(status: BookStatus.loaded, books: books));
     } catch (_) {
       emit(state.copyWith(status: BookStatus.failure));
@@ -60,15 +64,17 @@ class BookBloc extends Bloc<BookEvent, BookState> {
   ) async {
     emit(state.copyWith(status: BookStatus.loading));
     try {
-      print(event.author);
-      var categories = await _bookRepository.createBook(
-          title: event.title,
-          author: event.author,
-          description: event.description,
-          location: event.location!,
-          latitude: event.latitude,
-          longitude: event.longitude!,
-          image: event.image);
+      var book = await _bookRepository.createBook(
+        title: event.title,
+        author: event.author,
+        description: event.description,
+        location: event.location!,
+        latitude: event.latitude,
+        longitude: event.longitude!,
+        categoryId: event.categoryId,
+        image: event.image,
+        userId: event.userId,
+      );
 
       emit(state.copyWith(status: BookStatus.loaded));
     } catch (_) {

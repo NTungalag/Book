@@ -1,17 +1,13 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:diplom/events/authontication_event.dart';
-import 'package:diplom/models/user_model.dart';
 import 'package:diplom/repositories/authontication_repository.dart';
-import 'package:diplom/repositories/user_repository.dart';
 import 'package:diplom/states/authentication_state.dart';
 
 class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> {
   AuthenticationBloc({
     required AuthenticationRepository authenticationRepository,
-    required UserRepository userRepository,
   })  : _authRepository = authenticationRepository,
-        _userRepository = userRepository,
         super(const AuthenticationState.unknown()) {
     on<AuthStatusChanged>(_onAuthStatusChanged);
     on<AuthLogoutRequested>(_onAuthLogoutRequested);
@@ -21,7 +17,6 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   }
 
   final AuthenticationRepository _authRepository;
-  final UserRepository _userRepository;
   late StreamSubscription<AuthenticationStatus> _authStatusSubscription;
 
   @override
@@ -38,12 +33,13 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       case AuthenticationStatus.unauthenticated:
         return emit(const AuthenticationState.unauthenticated());
       case AuthenticationStatus.authenticated:
-        final user = await _tryGetUser();
+        // final user = await _tryGetUser();
         return emit(
-          user != null
-              ? AuthenticationState.authenticated(user.name!)
-              : const AuthenticationState.unauthenticated(),
-        );
+            // user != null
+            //     ?
+            AuthenticationState.authenticated()
+            // : const AuthenticationState.unauthenticated(),
+            );
       case AuthenticationStatus.unknown:
         return emit(const AuthenticationState.unknown());
     }
@@ -54,16 +50,5 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     Emitter<AuthenticationState> emit,
   ) {
     // _authRepository.logOut();
-  }
-
-  Future<User?> _tryGetUser() async {
-    try {
-      final user = await _userRepository.getUser();
-      print(user);
-
-      return user;
-    } catch (_) {
-      return null;
-    }
   }
 }

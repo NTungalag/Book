@@ -1,185 +1,253 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:flutter/material.dart';
+// // ignore_for_file: public_member_api_docs, sort_constructors_first
+// import 'dart:convert';
 
-class Search extends StatefulWidget {
-  List state;
-  Search({
-    Key? key,
-    required this.state,
-  }) : super(key: key);
+// import 'package:diplom/models/book_model.dart';
+// import 'package:diplom/screens/book.dart';
+// import 'package:diplom/screens/search_book.dart';
+// import 'package:flutter/material.dart';
+// import 'package:flutter_bloc/flutter_bloc.dart';
 
-  @override
-  State<Search> createState() => _SearchState();
-}
+// import 'package:diplom/blocs/book.bloc.dart';
+// import 'package:diplom/events/book_event.dart';
+// import 'package:diplom/models/category_model.dart';
+// import 'package:diplom/repositories/book_repository.dart';
+// import 'package:diplom/states/book_state.dart';
+// import 'package:http/http.dart';
 
-class _SearchState extends State<Search> {
-  final TextEditingController _searchController = TextEditingController();
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          centerTitle: true,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: const Text(
-            'Хайлт',
-            style: TextStyle(fontFamily: 'semi-bold', fontSize: 20),
-          ),
-          backgroundColor: const Color.fromARGB(255, 77, 195, 213),
-        ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(
-                height: 10,
-              ),
+// class Search extends StatefulWidget {
+//   Category? category;
+//   Search({
+//     Key? key,
+//     required this.category,
+//   }) : super(key: key);
 
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  // Add padding around the search bar
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  // Use a Material design search bar
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: 'Search...',
-                      // Add a clear button to the search bar
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () => _searchController.clear(),
-                      ),
-                      // Add a search icon or button to the search bar
-                      prefixIcon: IconButton(
-                        icon: const Icon(Icons.search),
-                        onPressed: () {
-                          // Perform the search here
-                        },
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                width: MediaQuery.of(context).size.width,
-                height: 20,
-                child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: widget.state.length,
-                    shrinkWrap: true,
-                    itemBuilder: (context, i) => GestureDetector(
-                          // onTap: () => Navigator.push(
-                          //     context, MaterialPageRoute(builder: (context) =>  Search())),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                            margin: const EdgeInsets.only(right: 9),
-                            decoration: BoxDecoration(
-                              color: const Color.fromARGB(255, 210, 235, 255),
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.heart_broken_rounded,
-                                  size: 13,
-                                  color: Colors.pinkAccent,
-                                ),
-                                const SizedBox(
-                                  width: 5,
-                                ),
-                                Text(
-                                  widget.state[i].name,
-                                  style: const TextStyle(
-                                      fontSize: 12, color: Color.fromARGB(255, 4, 52, 5)),
-                                  softWrap: true,
-                                )
-                              ],
-                            ),
-                          ),
-                        )),
-              ),
+//   @override
+//   State<Search> createState() => _SearchState();
+// }
 
-              // Container(
-              //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              //   color: Colors.grey.shade200,
-              //   child: Column(
-              //     crossAxisAlignment: CrossAxisAlignment.start,
-              //     children: [
-              //       const SizedBox(height: 20),
-              //       Text(
-              //         'Exchange and read books you like',
-              //         style: TextStyle(
-              //           fontSize: 16,
-              //           color: Colors.black.withOpacity(1),
-              //         ),
-              //       ),
-              //       const SizedBox(height: 8),
-              //       TextField(
-              //         decoration: InputDecoration(
-              //             border: OutlineInputBorder(
-              //               borderRadius: BorderRadius.circular(10.0),
-              //             ),
-              //             prefixIcon: const Icon(Icons.search_rounded),
-              //             filled: true,
-              //             hintStyle: TextStyle(color: Colors.grey[800]),
-              //             hintText: "Хайлт хийх",
-              //             fillColor: Colors.white70),
-              //       ),
+// class _SearchState extends State<Search> {
+//   final TextEditingController _searchController = TextEditingController();
+//   late Category? selectedCategory;
+//   final _debouncer = Debouncer();
+//   final controller = ScrollController();
 
-              //       // Container(
-              //       //   // color: Colors.indigo,
-              //       //   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              //       //   width: MediaQuery.of(context).size.width,
-              //       //   height: 250,
-              //       //   child: ListView.builder(
-              //       //       scrollDirection: Axis.horizontal,
-              //       //       itemCount: _booksList.length,
-              //       //       shrinkWrap: true,
-              //       //       itemBuilder: (context, i) => Container(
-              //       //             margin: const EdgeInsets.all(10),
-              //       //             child: Column(
-              //       //               mainAxisAlignment: MainAxisAlignment.start,
-              //       //               children: [
-              //       //                 Image.network(
-              //       //                   _booksList[i]['src'],
-              //       //                   // 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSyysf701YmXhAns1W7dVK7q0CTqfxb09aTTjfYQp1O2ijVj-7XrCjXY9oLNhJSUF2vFI&usqp=CAU',
-              //       //                   height: 200,
-              //       //                   // width: 90,
-              //       //                   fit: BoxFit.fitHeight,
-              //       //                 ),
-              //       //                 const SizedBox(height: 8),
-              //       //                 Text(_booksList[i]['title']),
-              //       //               ],
-              //       //             ),
-              //       //           )),
-              //       // ),
-              //     ],
-              //   ),
-              // ),
-              // // GridView.builder(
-              //     gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              //         maxCrossAxisExtent: 200,
-              //         childAspectRatio: 3 / 2,
-              //         crossAxisSpacing: 20,
-              //         mainAxisSpacing: 20),
-              //     itemCount: _booksList.length,
-              //     itemBuilder: (BuildContext ctx, index) {
-              //       return Container(
-              //         alignment: Alignment.center,
-              //         decoration: BoxDecoration(
-              //             color: Colors.amber, borderRadius: BorderRadius.circular(15)),
-              //         child: Text(_booksList[index]["title"]),
-              //       );
-              //     }),
-            ],
-          ),
-        ));
-  }
-}
+//   static List<Book> parse(String responseBody) {
+//     List parsed = json.decode(responseBody)['data'];
+//     return parsed.map((json) => Book.fromMap(json)).toList();
+//   }
+
+//   @override
+//   void initState() {
+//     super.initState();
+
+//     selectedCategory = widget.category;
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//         backgroundColor: Colors.grey.shade100,
+//         appBar: AppBar(
+//             elevation: 0,
+//             centerTitle: true,
+//             leading: IconButton(
+//               icon: const Icon(Icons.arrow_back, color: Colors.black),
+//               onPressed: () => Navigator.pop(context),
+//             ),
+//             title: const Text(
+//               'Хайлт',
+//               style: TextStyle(fontFamily: 'semi-bold', fontSize: 25, color: Colors.black),
+//             ),
+//             backgroundColor: Colors.white),
+//         body: BlocBuilder<BookBloc, BookState>(
+//           builder: (context, state) {
+//             return SafeArea(
+//               child: Column(
+//                 children: [
+//                   const SizedBox(
+//                     height: 10,
+//                   ),
+//                   Container(
+//                     width: MediaQuery.of(context).size.width,
+//                     decoration: BoxDecoration(
+//                       borderRadius: BorderRadius.circular(10.0),
+//                       border: Border.all(
+//                         color: Colors.black,
+//                         width: 1,
+//                         style: BorderStyle.solid,
+//                       ),
+//                       color: Colors.white12,
+//                     ),
+//                     margin: const EdgeInsets.all(16),
+//                     padding: const EdgeInsets.symmetric(horizontal: 16),
+//                     child: DropdownButton(
+//                       value: selectedCategory,
+//                       items: state.categories
+//                           .map((e) => DropdownMenuItem(value: e, child: Text(e.name)))
+//                           .toList(),
+//                       onChanged: ((value) {
+//                         setState(() {
+//                           selectedCategory = value as Category;
+//                         });
+//                       }),
+//                       icon: const Padding(
+//                           padding: EdgeInsets.only(left: 20), child: Icon(Icons.arrow_drop_down)),
+//                       iconEnabledColor: Colors.black,
+//                       style: const TextStyle(color: Colors.black, fontSize: 20),
+//                       dropdownColor: Colors.redAccent,
+//                       underline: Container(),
+//                       isExpanded: true,
+//                     ),
+//                   ),
+//                   Padding(
+//                     padding: const EdgeInsets.all(8.0),
+//                     child: Container(
+//                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
+//                       child: TextField(
+//                         onChanged: (value) {
+//                           _debouncer.run(() {
+//                             setState(() {
+//                               booklist = ulist
+//                                   .where((u) => (u.title.toLowerCase().contains(
+//                                         value.toLowerCase(),
+//                                       )))
+//                                   .toList();
+//                             });
+//                             fetch();
+//                           });
+//                         },
+//                         controller: _searchController,
+//                         decoration: InputDecoration(
+//                           hintText: 'Ном хайх',
+//                           suffixIcon: IconButton(
+//                             icon: const Icon(Icons.clear),
+//                             onPressed: () => _searchController.clear(),
+//                           ),
+//                           // Add a search icon or button to the search bar
+//                           prefixIcon: IconButton(
+//                             icon: const Icon(Icons.search),
+//                             onPressed: () {
+//                               // Perform the search here
+//                             },
+//                           ),
+//                           border: OutlineInputBorder(
+//                             borderRadius: BorderRadius.circular(10.0),
+//                           ),
+//                         ),
+//                       ),
+//                     ),
+//                   ),
+//                   Expanded(
+//                     child: RefreshIndicator(
+//                       onRefresh: refresh,
+//                       child: ListView.builder(
+//                         controller: controller,
+//                         shrinkWrap: true,
+//                         physics: const ClampingScrollPhysics(),
+//                         padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 5),
+//                         itemCount: booklist.length + 1,
+//                         itemBuilder: (BuildContext context, int index) {
+//                           if (index < booklist.length) {
+//                             return GestureDetector(
+//                               onTap: () => Navigator.push(
+//                                 context,
+//                                 MaterialPageRoute(
+//                                   builder: (context) => BookScreen(
+//                                     book: booklist[index],
+//                                   ),
+//                                 ),
+//                               ),
+//                               child: Card(
+//                                 elevation: 0,
+//                                 color: Colors.white,
+//                                 shape: RoundedRectangleBorder(
+//                                   borderRadius: BorderRadius.circular(10),
+//                                   side: BorderSide(
+//                                     color: Colors.grey.shade100,
+//                                   ),
+//                                 ),
+//                                 child: Column(
+//                                   mainAxisAlignment: MainAxisAlignment.start,
+//                                   crossAxisAlignment: CrossAxisAlignment.start,
+//                                   children: <Widget>[
+//                                     ListTile(
+//                                       leading: ClipRRect(
+//                                         borderRadius: BorderRadius.circular(5.0),
+//                                         child: Image.network(
+//                                           booklist[index].image!,
+//                                         ),
+//                                       ),
+//                                       title: Text(
+//                                         booklist[index].title,
+//                                         style: const TextStyle(fontSize: 16),
+//                                       ),
+//                                       subtitle: Text(
+//                                         booklist[index].author,
+//                                         style: const TextStyle(fontSize: 16),
+//                                       ),
+//                                       trailing: GestureDetector(
+//                                           onTap: () {},
+//                                           child: Padding(
+//                                             padding: const EdgeInsets.all(8),
+//                                             child: IconButton(
+//                                                 onPressed: () {},
+//                                                 icon: const Icon(
+//                                                   Icons.location_pin,
+//                                                   color: Colors.black,
+//                                                   size: 15,
+//                                                 )),
+//                                           )),
+//                                     )
+//                                   ],
+//                                 ),
+//                               ),
+//                             );
+//                           } else {
+//                             return hasMore
+//                                 ? const Center(child: CircularProgressIndicator())
+//                                 : const SizedBox();
+//                           }
+//                         },
+//                       ),
+//                     ),
+//                   ),
+//                 ],
+//               ),
+//             );
+//           },
+//         ));
+//   }
+// }
+
+// class SearchB extends StatefulWidget {
+//   Category category;
+
+//   SearchB({
+//     Key? key,
+//     required this.category,
+//   }) : super(key: key);
+
+//   @override
+//   State<SearchB> createState() => _SearchBState();
+// }
+
+// class _SearchBState extends State<SearchB> {
+//   late final BookRepository _bookRepository;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _bookRepository = BookRepository();
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return MultiBlocProvider(providers: [
+//       BlocProvider<BookBloc>(
+//         create: (BuildContext context) => BookBloc(bookRepository: _bookRepository)
+//           ..add(const GetBooks())
+//           ..add(GetCategories()),
+//       ),
+//     ], child: Search(category: widget.category));
+//   }
+// }

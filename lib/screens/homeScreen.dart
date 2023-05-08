@@ -1,9 +1,12 @@
 import 'package:diplom/events/book_event.dart';
+import 'package:diplom/models/category_model.dart';
+import 'package:diplom/screens/permission.dart';
+import 'package:diplom/screens/search_book.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:diplom/blocs/book.bloc.dart';
-import 'package:diplom/icons.dart';
+
 import 'package:diplom/screens/book.dart';
 import 'package:diplom/screens/search.dart';
 import 'package:diplom/states/book_state.dart';
@@ -42,7 +45,11 @@ class _HomeState extends State<Home> {
                   children: [
                     ElevatedButton(
                       onPressed: () {
-                        context.read<BookBloc>().add(const GetBooks('8'));
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(builder: (context) => Per()),
+                        // );
+                        context.read<BookBloc>().add(const GetBooks());
                         context.read<BookBloc>().add(GetCategories());
                       },
                       child: const Text('Button'),
@@ -80,16 +87,27 @@ class _HomeState extends State<Home> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          TextField(
-                            decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15.0),
-                                ),
-                                prefixIcon: const Icon(Icons.search_rounded),
+                          GestureDetector(
+                            onTap: () => Navigator.push(
+                                context, MaterialPageRoute(builder: (context) => SearchB())),
+                            child: TextField(
+                              decoration: InputDecoration(
                                 filled: true,
+                                fillColor: Colors.white,
+                                disabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  borderSide: const BorderSide(
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                prefixIcon: const InkWell(
+                                  child: Icon(Icons.search),
+                                ),
+                                enabled: false,
                                 hintStyle: TextStyle(color: Colors.grey[800]),
                                 hintText: "Хайлт хийх",
-                                fillColor: Colors.white70),
+                              ),
+                            ),
                           )
                         ],
                       ),
@@ -98,7 +116,7 @@ class _HomeState extends State<Home> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(
-                          height: 5,
+                          height: 14,
                         ),
                         Container(
                           margin: const EdgeInsets.only(left: 16),
@@ -122,9 +140,11 @@ class _HomeState extends State<Home> {
                                     onTap: () => Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                            builder: (context) => Search(
-                                                  state: state.categories,
-                                                ))),
+                                            builder: (context) => SearchB(
+                                                category: state.categories[
+                                                    i]) //dawxar Blocprovider ywaad bgaag xarad
+                                            // Search(  state: state.categories,)
+                                            )),
                                     child: Container(
                                       padding:
                                           const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
@@ -157,7 +177,7 @@ class _HomeState extends State<Home> {
                       ],
                     ),
                     const SizedBox(
-                      height: 10,
+                      height: 14,
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -165,7 +185,7 @@ class _HomeState extends State<Home> {
                         Container(
                           margin: const EdgeInsets.only(left: 16),
                           child: const Text(
-                            'Танд ойрхон номууд',
+                            'Сүүлд нэмэгдсэн',
                             style: TextStyle(
                               fontSize: 18,
                               color: Colors.black,
@@ -177,11 +197,7 @@ class _HomeState extends State<Home> {
                           margin: const EdgeInsets.only(right: 16),
                           child: InkWell(
                             onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => Search(
-                                          state: state.categories,
-                                        ))),
+                                context, MaterialPageRoute(builder: (context) => SearchB())),
                             child: const Text(
                               'Бүгдийг үзэх',
                               style: TextStyle(
@@ -239,91 +255,6 @@ class _HomeState extends State<Home> {
                         itemCount: state.books.length,
                       ),
                     ),
-                    // SizedBox(
-                    //   width: MediaQuery.of(context).size.width,
-                    //   height: 300,
-                    //   child: GridView.builder(
-                    //       // physics: const NeverScrollableScrollPhysics(),
-                    //       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    //         crossAxisCount: 2,
-                    //       ),
-                    //       itemCount: state.books.length,
-                    //       itemBuilder: (BuildContext context, int index) {
-                    //         return GestureDetector(
-                    //           onTap: () => Navigator.push(
-                    //               context,
-                    //               MaterialPageRoute(
-                    //                   builder: (context) => BookScreen(book: state.books[index]))),
-                    //           child: Container(
-                    //             margin: const EdgeInsets.symmetric(horizontal: 5),
-                    //             child: Column(
-                    //               mainAxisAlignment: MainAxisAlignment.start,
-                    //               crossAxisAlignment: CrossAxisAlignment.center,
-                    //               children: [
-                    //                 ClipRRect(
-                    //                   borderRadius: BorderRadius.circular(10.0),
-                    //                   child: Image.network(
-                    //                     state.books[index].image!,
-                    //                     height: MediaQuery.of(context).size.width / 3.3,
-                    //                     width: MediaQuery.of(context).size.width / 3.3,
-                    //                     fit: BoxFit.cover,
-                    //                   ),
-                    //                 ),
-                    //                 const SizedBox(height: 8),
-                    //                 Text(state.books[index].title),
-                    //                 const SizedBox(height: 8),
-                    //                 Row(
-                    //                   mainAxisAlignment: MainAxisAlignment.start,
-                    //                   children: const [
-                    //                     Icon(
-                    //                       Icons.location_pin,
-                    //                       color: Colors.black38,
-                    //                       size: 10,
-                    //                     ),
-                    //                     SizedBox(
-                    //                       width: 5,
-                    //                     ),
-                    //                     Text(
-                    //                       '200m',
-                    //                       style: TextStyle(
-                    //                         fontSize: 10,
-                    //                         overflow: TextOverflow.ellipsis,
-                    //                       ),
-                    //                     ),
-                    //                   ],
-                    //                 )
-                    //               ],
-                    //             ),
-                    //           ),
-                    //         );
-                    //       }),
-                    // ),
-
-                    // ListView.builder(
-                    //   scrollDirection: Axis.horizontal,
-                    //   itemCount: state.books.length,
-                    //   shrinkWrap: true,
-                    //   itemBuilder: (context, i) => Container(
-                    //     margin: const EdgeInsets.all(10),
-                    //     child: Column(
-                    //       mainAxisAlignment: MainAxisAlignment.start,
-                    //       children: [
-                    //         ClipRRect(
-                    //           borderRadius: BorderRadius.circular(10.0),
-                    //           child: Image.network(
-                    //             state.books[i].image!,
-                    //             height: 160,
-                    //             width: 110,
-                    //             fit: BoxFit.fitHeight,
-                    //           ),
-                    //         ),
-                    //         const SizedBox(height: 8),
-                    //         Text(state.books[i].title),
-                    //       ],
-                    //     ),
-                    //   ),
-                    // ),
-                    //   ),
                   ],
                 ),
               );

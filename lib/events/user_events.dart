@@ -7,19 +7,14 @@ abstract class UserEvent extends Equatable {
   List<Object> get props => [];
 }
 
-// class UserUsernameChanged extends UserEvent {
-//   const UserUsernameChanged(this.username);
+class GetUserBooks extends UserEvent {
+  final int userId;
 
-//   final String username;
+  const GetUserBooks(this.userId);
+}
 
-//   @override
-//   List<Object> get props => [username];
-// }
-
-class GetUserBooks extends UserEvent {}
-
-class UserSubmitted extends UserEvent {
-  const UserSubmitted(this.password, this.username);
+class LoginSubmitted extends UserEvent {
+  const LoginSubmitted(this.password, this.username);
   final String password;
   final String username;
 

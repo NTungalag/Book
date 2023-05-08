@@ -1,7 +1,4 @@
-import 'dart:convert';
-
 import 'package:diplom/models/user_model.dart';
-import 'package:http/http.dart';
 
 class UserRepository {
   Future<String> authenticate({
@@ -34,9 +31,7 @@ class UserRepository {
 
   //   if (response.statusCode == 200) {
   //     List data = json.decode(response.body)['data'];
-  //     print(data);
   //     List<User> user = data.map((val) => User.fromMap(val)).toList();
-  //     // print(books);
   //     return user;
   //   } else {
   //     throw Exception(response.reasonPhrase);

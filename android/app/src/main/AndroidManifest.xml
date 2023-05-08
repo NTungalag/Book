@@ -33,6 +33,7 @@
             android:value="2" />
         <meta-data android:name="com.google.android.gep.API_KEY"
         android:value="AIzaSyCCcvx2VLdLQshE9bIBcrs1fBvbWoDz6Aw"/>
-        
+        <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+        <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
     </application>
 </manifest>

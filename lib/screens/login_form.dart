@@ -1,9 +1,10 @@
 import 'package:diplom/blocs/authentication_bloc.dart';
-import 'package:diplom/blocs/login_bloc.dart';
+import 'package:diplom/blocs/user_bloc.dart';
 import 'package:diplom/events/authontication_event.dart';
-import 'package:diplom/events/login_events.dart';
+import 'package:diplom/events/user_events.dart';
 import 'package:diplom/repositories/authontication_repository.dart';
-import 'package:diplom/states/login_state.dart';
+import 'package:diplom/screens/register.dart';
+import 'package:diplom/states/user_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -16,19 +17,25 @@ class LoginForm extends StatefulWidget {
 
 class _LoginFormState extends State<LoginForm> {
   String email = '', password = '';
+  late bool _passwordVisible;
+  @override
+  void initState() {
+    super.initState();
+    _passwordVisible = false;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<LoginBloc, LoginState>(
+    return BlocListener<UserBloc, UserState>(
       listener: (context, state) {
-        if (state.status == LoginStatus.FAILURE) {
+        if (state.status == UserStatus.FAILURE) {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
               const SnackBar(content: Text('Authentication Failure')),
             );
         }
-        if (state.status == LoginStatus.VALID) {
+        if (state.status == UserStatus.VALID) {
           context
               .read<AuthenticationBloc>()
               .add(const AuthStatusChanged(AuthenticationStatus.authenticated));
@@ -40,41 +47,46 @@ class _LoginFormState extends State<LoginForm> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // _UsernameInput(),
-              // const Padding(padding: EdgeInsets.all(12)),
-              // _PasswordInput(),
-              // const Padding(padding: EdgeInsets.all(12)),
-              // _LoginButton(),
               TextFormField(
+                keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
-                  icon: Icon(Icons.person),
-                  hintText: 'What do people call you?',
-                  labelText: 'Name *',
+                  icon: Icon(Icons.email_rounded),
+                  labelText: 'Цахим хаяг',
                 ),
                 onChanged: (value) => email = value,
-                onSaved: (String? value) {
-                  // This optional block of code can be used to run
-                  // code when the user saves the form.
-                },
+                onSaved: (String? value) {},
                 validator: (String? value) {
                   return (value != null && value.contains('@')) ? 'Do not use the @ char.' : null;
                 },
               ),
               TextFormField(
-                decoration: const InputDecoration(
-                  icon: Icon(Icons.person),
-                  hintText: 'What do people call you?',
-                  labelText: 'Name *',
+                keyboardType: TextInputType.text,
+                decoration: InputDecoration(
+                  suffixIcon: GestureDetector(
+                      onTap: () => setState(() {
+                            _passwordVisible = !_passwordVisible;
+                          }),
+                      child: Icon(_passwordVisible ? Icons.visibility_off : Icons.visibility)),
+                  icon: const Icon(Icons.security_update),
+                  labelText: 'Нууц үг',
                 ),
                 onChanged: (value) => password = value,
                 onSaved: (String? value) {},
                 validator: (String? value) {
                   return (value != null && value.contains('@')) ? 'Do not use the @ char.' : null;
                 },
+                obscureText: _passwordVisible,
+              ),
+              const SizedBox(
+                height: 20,
               ),
               ElevatedButton(
-                  onPressed: () => context.read<LoginBloc>().add(LoginSubmitted(password, email)),
-                  child: const Text('Press'))
+                  onPressed: () => context.read<UserBloc>().add(LoginSubmitted(password, email)),
+                  child: const Text('Нэвтрэх')),
+              GestureDetector(
+                  onTap: () => Navigator.push(
+                      context, MaterialPageRoute(builder: (context) => const Register())),
+                  child: const Text('Бүртгүүлэх'))
             ],
           ),
         ),
@@ -82,64 +94,3 @@ class _LoginFormState extends State<LoginForm> {
     );
   }
 }
-
-// class _UsernameInput extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return BlocBuilder<LoginBloc, LoginState>(
-//       buildWhen: (previous, current) => previous.username != current.username,
-//       builder: (context, state) {
-//         return TextField(
-//           key: const Key('loginForm_usernameInput_textField'),
-//           onChanged: (username) => context.read<LoginBloc>().add(LoginUsernameChanged(username)),
-//           decoration: const InputDecoration(
-//             labelText: 'username',
-//             errorText: /*state.username.invalid ? 'invalid username' :*/ null,
-//           ),
-//         );
-//       },
-//     );
-//   }
-// }
-
-// class _PasswordInput extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return BlocBuilder<LoginBloc, LoginState>(
-//       buildWhen: (previous, current) => previous.password != current.password,
-//       builder: (context, state) {
-//         return TextField(
-//           key: const Key('loginForm_passwordInput_textField'),
-//           onChanged: (password) => context.read<LoginBloc>().add(LoginPasswordChanged(password)),
-//           obscureText: true,
-//           decoration: const InputDecoration(
-//             labelText: 'password',
-//             errorText: /* state.password.invalid ? 'invalid password' :*/ null,
-//           ),
-//         );
-//       },
-//     );
-//   }
-// }
-
-// class _LoginButton extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return BlocBuilder<LoginBloc, LoginState>(
-//       buildWhen: (previous, current) => previous.username != current.username,
-//       builder: (context, state) {
-//         return state.status == LoginStatus.VALID
-//             ? const CircularProgressIndicator()
-//             : ElevatedButton(
-//                 key: const Key('loginForm_continue_raisedButton'),
-//                 onPressed: state.status == LoginStatus.INVALID
-//                     ? () {
-//                         // context.read<LoginBloc>().add(const LoginSubmitted());
-//                       }
-//                     : null,
-//                 child: const Text('Login'),
-//               );
-//       },
-//     );
-//   }
-// }

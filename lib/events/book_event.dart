@@ -36,9 +36,15 @@ class BookSubmitted extends BookEvent {
 }
 
 class GetBooks extends BookEvent {
-  final String? CategoryId;
+  final int? categoryId;
+  final int? userId;
+  final String? title;
+  final String? latitude;
+  final String? longitude;
+  final String? page;
 
-  const GetBooks(this.CategoryId);
+  const GetBooks(
+      {this.categoryId, this.userId, this.title, this.latitude, this.longitude, this.page});
 }
 
 class GetCategories extends BookEvent {}
@@ -51,13 +57,18 @@ class CreateBook extends BookEvent {
   final String latitude;
   final String? longitude;
   final String image;
+  final String categoryId;
+  final String userId;
 
-  const CreateBook(
-      {required this.title,
-      required this.description,
-      required this.author,
-      required this.location,
-      required this.latitude,
-      required this.longitude,
-      required this.image});
+  const CreateBook({
+    required this.title,
+    required this.description,
+    required this.author,
+    required this.location,
+    required this.latitude,
+    required this.longitude,
+    required this.image,
+    required this.categoryId,
+    required this.userId,
+  });
 }

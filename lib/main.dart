@@ -1,16 +1,14 @@
-import 'package:diplom/repositories/book_repository.dart';
-import 'package:diplom/screens/login_screen.dart';
-import 'package:diplom/tabs.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:diplom/blocs/authentication_bloc.dart';
-
+import 'package:diplom/blocs/user_bloc.dart';
 import 'package:diplom/repositories/authontication_repository.dart';
-import 'package:diplom/repositories/user_repository.dart';
+import 'package:diplom/repositories/book_repository.dart';
+import 'package:diplom/screens/login_screen.dart';
 import 'package:diplom/screens/splashScreen.dart';
 import 'package:diplom/states/authentication_state.dart';
-
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:diplom/tabs.dart';
 
 void main() {
   runApp(const App());
@@ -25,13 +23,13 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   late final AuthenticationRepository _authenticationRepository;
-  late final UserRepository _userRepository;
+  late final BookRepository _bookRepository;
 
   @override
   void initState() {
     super.initState();
     _authenticationRepository = AuthenticationRepository();
-    _userRepository = UserRepository();
+    _bookRepository = BookRepository();
   }
 
   @override
@@ -46,14 +44,19 @@ class _AppState extends State<App> {
       providers: [
         RepositoryProvider<AuthenticationRepository>(
             create: (context) => AuthenticationRepository()),
-        RepositoryProvider<UserRepository>(create: (context) => UserRepository()),
         RepositoryProvider<BookRepository>(create: (context) => BookRepository()),
       ],
-      child: BlocProvider(
-        create: (_) => AuthenticationBloc(
-          authenticationRepository: _authenticationRepository,
-          userRepository: _userRepository,
-        ),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<AuthenticationBloc>(
+              create: (BuildContext context) =>
+                  AuthenticationBloc(authenticationRepository: _authenticationRepository)),
+          BlocProvider<UserBloc>(
+              create: (BuildContext context) => UserBloc(
+                    authenticationRepository: _authenticationRepository,
+                    bookRepository: _bookRepository,
+                  )),
+        ],
         child: const AppView(),
       ),
     );

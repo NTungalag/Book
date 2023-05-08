@@ -1,14 +1,17 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
-class User {
-  int id;
-  String? name;
-  String email;
-  String? role;
-  String? about;
-  int? chatRoomId;
-  User({
+import 'package:equatable/equatable.dart';
+
+class User extends Equatable {
+  final int id;
+  final String? name;
+  final String email;
+  final String? role;
+  final String? about;
+  final int? chatRoomId;
+
+  const User({
     required this.id,
     this.name,
     required this.email,
@@ -87,4 +90,9 @@ class User {
         about.hashCode ^
         chatRoomId.hashCode;
   }
+
+  static const empty = User(email: '', id: 0);
+
+  @override
+  List<Object?> get props => [id, name, email, role, about, chatRoomId];
 }

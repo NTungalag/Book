@@ -49,5 +49,7 @@
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
     <string>Upload images for screen background</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Some description</string>
 </dict>
 </plist>

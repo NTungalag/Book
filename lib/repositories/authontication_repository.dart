@@ -7,6 +7,7 @@ import 'package:http/http.dart';
 enum AuthenticationStatus { unknown, authenticated, unauthenticated }
 
 class AuthenticationRepository {
+  // User? _user;
   final _controller = StreamController<AuthenticationStatus>();
   String userUrl = 'http://localhost:8000/api/users/login';
   Stream<AuthenticationStatus> get status async* {
@@ -27,7 +28,6 @@ class AuthenticationRepository {
 
     if (response.statusCode == 200) {
       final user = jsonDecode(response.body)['user'];
-
       User u = User.fromMap(user);
 
       return u;
@@ -80,6 +80,9 @@ class AuthenticationRepository {
 
   // void logOut() {
   //   _controller.add(AuthenticationStatus.unauthenticated);
+  // }
+  // Future<User?> getUser() async {
+  //   return _user;
   // }
 
   void dispose() => _controller.close();
