@@ -1,10 +1,16 @@
+import 'package:diplom/blocs/authentication_bloc.dart';
+import 'package:diplom/events/authontication_event.dart';
+import 'package:diplom/repositories/authontication_repository.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:diplom/blocs/book.bloc.dart';
 import 'package:diplom/blocs/user_bloc.dart';
 import 'package:diplom/events/user_events.dart';
 import 'package:diplom/models/user_model.dart';
 import 'package:diplom/screens/book.dart';
+import 'package:diplom/screens/edit_profile_screen.dart';
 import 'package:diplom/states/user_state.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -17,12 +23,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   TabController? tabController;
   int selectedIndex = 0;
   late User user;
+  late List categories;
 
   @override
   void initState() {
     super.initState();
     tabController = TabController(length: 2, vsync: this);
     user = context.read<UserBloc>().state.user!;
+    categories = context.read<BookBloc>().state.categories;
 
     context.read<UserBloc>().add(GetUserBooks(user.id));
   }
@@ -52,7 +60,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                     ),
                     const SizedBox(height: 8.0),
                     Text(
-                      "Ulaanbaatar",
+                      state.user!.email,
                       style: TextStyle(
                           color: Colors.black.withOpacity(0.8),
                           fontSize: 20.0,
@@ -60,7 +68,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                     ),
                     const SizedBox(height: 8.0),
                     Text(
-                      "${state.user?.email} |  Нийт ${state.books.isNotEmpty ? state.books.length.toString() : '0'} ном ",
+                      "Нийт ${state.books.isNotEmpty ? state.books.length.toString() : '0'} ном ",
                       style: TextStyle(
                           color: Colors.black.withOpacity(0.8),
                           fontSize: 16.0,
@@ -69,18 +77,67 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                   ],
                 ),
                 Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
-                      Icons.more_horiz,
-                      size: 20.0,
-                    ),
-                  ),
-                  const CircleAvatar(
-                    backgroundImage: NetworkImage(
-                        "https://free2music.com/images/singer/2019/02/10/troye-sivan_2.jpg"),
-                    radius: 40.0,
-                  ),
+                  // IconButton(
+                  //   onPressed: () => Navigator.push(context,
+                  //       MaterialPageRoute(builder: (context) => EditProfileScreen(user: user))),
+                  //   icon: const Icon(
+                  //     Icons.more_horiz,
+                  //     size: 20.0,
+                  //   ),
+                  // ),
+                  PopupMenuButton(
+                      // icon: Icon(Icons.settings),
+                      onSelected: (value) {
+                        if (value == 1) {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => EditProfileScreen(user: user)));
+                        } else {
+                          context
+                              .read<AuthenticationBloc>()
+                              .add(const AuthStatusChanged(AuthenticationStatus.unauthenticated));
+                        }
+                      },
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(8.0),
+                          bottomRight: Radius.circular(8.0),
+                          topLeft: Radius.circular(8.0),
+                          topRight: Radius.circular(8.0),
+                        ),
+                      ),
+                      itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 1,
+                              child: Text('Хувийн мэдээлэл засах'),
+                              // onTap: () => Navigator.push(
+                              //     context,
+                              //     MaterialPageRoute(
+                              //         builder: (context) => EditProfileScreen(user: user))),
+                            ),
+                            const PopupMenuItem(
+                              value: 2,
+                              child: Text('Системээс гарах'),
+                              // onTap: () => context
+                              //     .read<AuthenticationBloc>()
+                              //     .add(AuthStatusChanged(AuthenticationStatus.unauthenticated)),
+                            ),
+                          ]),
+                  user.image != null
+                      ? CircleAvatar(
+                          backgroundImage: NetworkImage(user.image!),
+                          radius: 40.0,
+                        )
+                      : CircleAvatar(
+                          radius: 40.0,
+                          child: ClipOval(
+                            child: Image.asset(
+                              'assets/Images/person.png',
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
                 ]),
               ],
             ),
@@ -126,7 +183,11 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                       onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => BookScreen(book: state.books[index]))),
+                              builder: (context) => BookScreen(
+                                    book: state.books[index],
+                                    user: user,
+                                    categories: categories,
+                                  ))),
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 16.0, left: 8, right: 8),
                         child: Container(
@@ -148,7 +209,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                                   borderRadius: BorderRadius.circular(8.0)),
                               child: Text(
                                 state.books[index].title,
-                                style: const TextStyle(color: Colors.black),
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                ), // fontWeight: FontWeight.w500),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),

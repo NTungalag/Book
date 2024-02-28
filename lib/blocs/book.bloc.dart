@@ -4,11 +4,7 @@ import 'package:diplom/repositories/book_repository.dart';
 import 'package:diplom/states/book_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-enum BookStatus {
-  loading,
-  failure,
-  loaded,
-}
+enum BookStatus { loading, failure, loaded, success }
 
 class BookBloc extends Bloc<BookEvent, BookState> {
   BookBloc({
@@ -18,6 +14,7 @@ class BookBloc extends Bloc<BookEvent, BookState> {
     on<GetBooks>(_onGetBooks);
     on<GetCategories>(_onGetCategories);
     on<CreateBook>(_onCreateBook);
+    on<UpdateBook>(_onUpdateBook);
   }
 
   final BookRepository _bookRepository;
@@ -76,11 +73,45 @@ class BookBloc extends Bloc<BookEvent, BookState> {
         userId: event.userId,
       );
 
-      emit(state.copyWith(status: BookStatus.loaded));
+      emit(state.copyWith(status: BookStatus.success));
     } catch (_) {
       emit(state.copyWith(
         status: BookStatus.failure,
       ));
+    }
+  }
+
+  Future<void> _onUpdateBook(
+    UpdateBook event,
+    Emitter<BookState> emit,
+  ) async {
+    emit(state.copyWith(status: BookStatus.loading));
+    try {
+      var book = event.image == null
+          ? await _bookRepository.updateBook(
+              bookId: event.bookId,
+              title: event.title!,
+              author: event.author!,
+              description: event.description!,
+              location: event.location!,
+              latitude: event.latitude!,
+              longitude: event.longitude!,
+              categoryId: event.categoryId!,
+            )
+          : await _bookRepository.updateBook(
+              bookId: event.bookId,
+              title: event.title!,
+              author: event.author!,
+              description: event.description!,
+              location: event.location!,
+              latitude: event.latitude!,
+              longitude: event.longitude!,
+              categoryId: event.categoryId!,
+              image: event.image!,
+            );
+      emit(state.copyWith(status: BookStatus.success));
+    } catch (_) {
+      emit(state.copyWith(status: BookStatus.failure));
     }
   }
 }

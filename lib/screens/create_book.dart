@@ -1,15 +1,19 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-import 'package:diplom/blocs/book.bloc.dart';
-import 'package:diplom/blocs/user_bloc.dart';
-import 'package:diplom/events/book_event.dart';
-import 'package:diplom/models/category_model.dart';
-import 'package:diplom/states/book_state.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+
+import 'package:diplom/blocs/book.bloc.dart';
+import 'package:diplom/blocs/user_bloc.dart';
+import 'package:diplom/events/book_event.dart';
+import 'package:diplom/events/user_events.dart';
+import 'package:diplom/models/category_model.dart';
+import 'package:diplom/models/user_model.dart';
+import 'package:diplom/states/book_state.dart';
 
 class CreateBookScreen extends StatefulWidget {
   const CreateBookScreen({super.key});
@@ -19,25 +23,43 @@ class CreateBookScreen extends StatefulWidget {
 }
 
 class _CreateBookScreenState extends State<CreateBookScreen> {
+  TextEditingController co1 = TextEditingController();
+  TextEditingController co2 = TextEditingController();
+  TextEditingController co3 = TextEditingController();
+  TextEditingController co4 = TextEditingController();
+
+  final ImagePicker picker = ImagePicker();
   final _formKey = GlobalKey<FormState>();
-  late String title, description, author, location, latitude, longitude;
-  Category? categoryId;
+
   static const initialCameraPosition = CameraPosition(
     target: LatLng(47.917, 106.918),
     zoom: 15,
   );
-  XFile? zurag;
+
   late String image;
+  late User user;
+  late String title, description, author, location, latitude, longitude;
+
+  late GoogleMapController googleMapController;
+
+  Category? categoryId;
+  Marker? marker;
+  XFile? zurag;
+
+  @override
+  void initState() {
+    super.initState();
+    user = context.read<UserBloc>().state.user!;
+    latitude = '';
+    longitude = '';
+  }
+
   Future getImage(ImageSource media) async {
-    var img = await picker.pickImage(
-      source: media,
-      imageQuality: 1,
-    );
+    var img = await picker.pickImage(source: media, imageQuality: 70);
     var base = base64Encode(File(img!.path).readAsBytesSync());
     log(base);
     setState(() {
       zurag = img;
-
       image = 'data:image/jpeg;base64,$base';
     });
   }
@@ -48,56 +70,73 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
         builder: (BuildContext context) {
           return AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            title: const Text('Please choose media to select'),
+            title: const Text('Зураг оруулах хэлбэрээ сонгоно уу'),
             content: SizedBox(
-              height: MediaQuery.of(context).size.height / 6,
-              child: Column(
-                children: [
-                  ElevatedButton(
-                    //if user click this button, user can upload image from gallery
-                    onPressed: () {
-                      Navigator.pop(context);
-                      getImage(ImageSource.gallery);
-                    },
-                    child: Row(
-                      children: const [
+                height: MediaQuery.of(context).size.height / 6,
+                child: Column(
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        getImage(ImageSource.gallery);
+                      },
+                      child: Row(children: const [
                         Icon(Icons.image),
-                        Text('From Gallery'),
-                      ],
+                        Text('Галлире'),
+                      ]),
                     ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      getImage(ImageSource.camera);
-                    },
-                    child: Row(
-                      children: const [
+                    ElevatedButton(
+                      onPressed: () {
+                        getImage(ImageSource.camera);
+                        Navigator.pop(context);
+                      },
+                      child: Row(children: const [
                         Icon(Icons.camera),
-                        Text('From Camera'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                        Text('Камер'),
+                      ]),
+                    )
+                  ],
+                )),
           );
         });
   }
 
-  final ImagePicker picker = ImagePicker();
-
-  Marker book = Marker(
-      markerId: const MarkerId('d'),
-      infoWindow: const InfoWindow(title: 'Book'),
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueMagenta),
-      position: const LatLng(47.917, 106.918));
-
-  late GoogleMapController googleMapController;
+  void dialog(bool loading) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              content: const CircularProgressIndicator());
+        });
+  }
 
   void _submit() {
-    var user = context.read<UserBloc>().state.user!;
-    if (_formKey.currentState!.validate() && categoryId != null) {
+    if (latitude == '') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Газрын зураг дээр байршил сонгоно уу'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    } else if (image == '') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Зураг сонгоно уу'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    } else if (categoryId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Номын төрөл сонгоно уу'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    } else if (_formKey.currentState!.validate() && categoryId != null) {
       context.read<BookBloc>().add(CreateBook(
           title: title,
           author: author,
@@ -111,236 +150,85 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
     }
   }
 
-  void _validate() {
-    _formKey.currentState!.validate();
-  }
+  // void _validate() {
+  //   _formKey.currentState!.validate();
+  // }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<BookBloc, BookState>(
-      builder: (BuildContext context, state) {
-        return Scaffold(
-          backgroundColor: Colors.grey.shade100,
-          appBar: AppBar(
-            elevation: 0,
-            title: const Text(
-              'Ном үүсгэх',
-              style: TextStyle(fontSize: 25, color: Colors.black, fontWeight: FontWeight.w600),
-            ),
-            backgroundColor: Colors.white,
-          ),
-          body: SingleChildScrollView(
+    return Scaffold(
+      backgroundColor: Colors.grey.shade100,
+      appBar: AppBar(
+        elevation: 0,
+        title: const Text(
+          'Ном үүсгэх',
+          style: TextStyle(fontSize: 22, color: Colors.black, fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: Colors.white,
+      ),
+      body: BlocConsumer<BookBloc, BookState>(
+        listener: (context, state) {
+          if (state.status == BookStatus.success) {
+            setState(() {
+              title = '';
+              description = '';
+              author = '';
+              location = '';
+              latitude = '';
+              longitude = '';
+              image = '';
+              zurag = null;
+            });
+            co1.clear();
+            co2.clear();
+            co3.clear();
+            co4.clear();
+
+            // context.read<BookBloc>().add(const GetBooks());
+            context.read<UserBloc>().add(GetUserBooks(user.id));
+
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text('Амжилттай нэмэгдлээ'),
+              backgroundColor: Colors.green,
+            ));
+          }
+          Center(child: CircularProgressIndicator());
+
+          if (state.status == BookStatus.failure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Номын мэдээлэл шинэчлэхэд алдаа гарлаа!'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          if (state.status == BookStatus.loading) {
+            // dialog(true);
+          }
+        },
+        builder: (context, state) {
+          if (state.status == BookStatus.loading) {
+            return Center(child: CircularProgressIndicator());
+          }
+          return SingleChildScrollView(
             child: Form(
               key: _formKey,
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    TextFormField(
-                      decoration: InputDecoration(
-                        fillColor: Colors.white,
-                        filled: true,
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Colors.grey,
-                            width: 1.0,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Colors.green,
-                            width: 1,
-                          ),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Colors.red,
-                            width: 1,
-                          ),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Colors.grey,
-                            width: 1,
-                          ),
-                        ),
-                        prefixIcon: const Icon(Icons.title),
-                        labelText: 'Номын нэр',
-                      ),
-                      validator: (text) {
-                        if (text == null || text.isEmpty) {
-                          return 'Can\'t be empty';
-                        }
-                        if (text.length < 4) {
-                          return 'Too short';
-                        }
-                        return null;
-                      },
-                      onChanged: (text) {
-                        setState(() => title = text);
-                        //    _validate();
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      width: MediaQuery.of(context).size.width,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10.0),
-                        border: Border.all(
-                          color: Colors.black,
-                          width: 1,
-                          style: BorderStyle.solid,
-                        ),
-                        color: Colors.white12,
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: DropdownButton(
-                        value: state.categories.first,
-                        items: state.categories
-                            .map((e) => DropdownMenuItem(value: e, child: Text(e.name)))
-                            .toList(),
-                        onChanged: ((value) {
-                          setState(() {
-                            categoryId = value as Category;
-                          });
-                        }),
-                        icon: const Padding(
-                            padding: EdgeInsets.only(left: 20), child: Icon(Icons.arrow_drop_down)),
-                        iconEnabledColor: Colors.black,
-                        style: const TextStyle(color: Colors.black, fontSize: 20),
-                        dropdownColor: Colors.redAccent,
-                        underline: Container(),
-                        isExpanded: true,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    TextFormField(
-                      decoration: InputDecoration(
-                        fillColor: Colors.white,
-                        filled: true,
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Colors.grey,
-                            width: 1.0,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Colors.green,
-                            width: 1,
-                          ),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Colors.red,
-                            width: 1,
-                          ),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Colors.grey,
-                            width: 1,
-                          ),
-                        ),
-                        prefixIcon: const Icon(Icons.person),
-                        labelText: 'Зохиогч',
-                      ),
-                      validator: (text) {
-                        if (text == null || text.isEmpty) {
-                          return 'Can\'t be empty';
-                        }
-                        if (text.length < 4) {
-                          return 'Too short';
-                        }
-                        return null;
-                      },
-                      onChanged: (text) {
-                        setState(() => author = text);
-                        //    _validate();
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      maxLines: 4,
-                      minLines: 1,
-                      maxLength: 200,
-                      decoration: InputDecoration(
-                        fillColor: Colors.white,
-                        filled: true,
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Colors.grey,
-                            width: 1.0,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Colors.green,
-                            width: 1,
-                          ),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Colors.red,
-                            width: 1,
-                          ),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Colors.grey,
-                            width: 1,
-                          ),
-                        ),
-                        prefixIcon: const Icon(Icons.description),
-                        labelText: 'Тайлбар',
-                      ),
-                      validator: (text) {
-                        if (text == null || text.isEmpty) {
-                          return 'Can\'t be empty';
-                        }
-                        if (text.length < 4) {
-                          return 'Too short';
-                        }
-                        return null;
-                      },
-                      onChanged: (text) {
-                        setState(() => description = text);
-                        //    _validate();
-                      },
-                    ),
-                    // const SizedBox(height: 12),
-                    ElevatedButton(
-                      onPressed: () {
-                        myAlert();
-                      },
-                      child: const Text('Upload Photo'),
-                    ),
-                    zurag != null
-                        ? Container(
-                            width: 100,
-                            height: 100,
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                  color: Colors.black, width: 1, style: BorderStyle.solid),
-                              borderRadius: BorderRadius.circular(20),
-                              color: Colors.blueGrey,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      zurag != null
+                          ? Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Colors.black, width: 1, style: BorderStyle.solid),
+                                borderRadius: BorderRadius.circular(20),
+                                color: Colors.blueGrey,
+                              ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
                                 child: Image.file(
@@ -350,123 +238,343 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
                                   height: 300,
                                 ),
                               ),
+                            )
+                          : Container(
+                              width: 100,
+                              height: 100,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Colors.black, width: 1.0, style: BorderStyle.solid),
+                                borderRadius: BorderRadius.circular(20),
+                                color: Colors.grey.shade200,
+                              ),
+                              child: const Text(
+                                "Зураг сонгоогүй байна",
+                                style: TextStyle(fontSize: 16),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
-                          )
-                        : Container(
-                            width: 100,
-                            height: 100,
-                            alignment: Alignment.center,
+                      Column(
+                        children: [
+                          Container(
                             decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10.0), color: Colors.green),
+                            width: MediaQuery.of(context).size.width / 5 * 3,
+                            child: ElevatedButton(
+                              style: ButtonStyle(
+                                  elevation: MaterialStateProperty.all(0),
+                                  backgroundColor: MaterialStateProperty.all(Colors.transparent)),
+                              onPressed: () {
+                                myAlert();
+                              },
+                              child: const Text('Зураг оруулах'),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 3,
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width / 5 * 3,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10.0),
                               border: Border.all(
-                                  color: Colors.black, width: 1.0, style: BorderStyle.solid),
-                              borderRadius: BorderRadius.circular(20),
-                              color: Color.fromARGB(255, 202, 202, 202),
+                                color: Colors.grey,
+                                width: 1,
+                                style: BorderStyle.solid,
+                              ),
+                              color: Colors.white12,
                             ),
-                            child: const Text(
-                              "Зураг сонгоогүй байна!",
-                              style: TextStyle(fontSize: 20),
+                            child: DropdownButton(
+                              value: state.categories.first,
+                              items: state.categories
+                                  .map((e) => DropdownMenuItem(value: e, child: Text(e.name)))
+                                  .toList(),
+                              onChanged: ((value) {
+                                setState(() {
+                                  categoryId = value as Category;
+                                });
+                              }),
+                              borderRadius: BorderRadius.circular(10.0),
+                              icon: const Padding(
+                                  padding: EdgeInsets.only(left: 20),
+                                  child: Icon(Icons.arrow_drop_down)),
+                              iconEnabledColor: Colors.black,
+                              style: const TextStyle(color: Colors.black, fontSize: 16),
+                              dropdownColor: Colors.white,
+                              isExpanded: true,
+                              underline: const SizedBox(),
                             ),
                           ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        fillColor: Colors.white,
-                        filled: true,
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Colors.grey,
-                            width: 1.0,
-                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  TextFormField(
+                    controller: co1,
+                    decoration: InputDecoration(
+                      fillColor: Colors.white,
+                      filled: true,
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1.0,
                         ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Colors.green,
-                            width: 1,
-                          ),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Colors.red,
-                            width: 1,
-                          ),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Colors.grey,
-                            width: 1,
-                          ),
-                        ),
-                        prefixIcon: const Icon(Icons.location_pin),
-                        labelText: 'Байршил',
                       ),
-                      validator: (text) {
-                        if (text == null || text.isEmpty) {
-                          return 'Can\'t be empty';
-                        }
-                        if (text.length < 4) {
-                          return 'Too short';
-                        }
-                        return null;
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Colors.green,
+                          width: 1,
+                        ),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Colors.red,
+                          width: 1,
+                        ),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                      ),
+                      prefixIcon: const Icon(Icons.title),
+                      labelText: 'Номын нэр',
+                    ),
+                    validator: (text) {
+                      if (text == null || text.isEmpty) {
+                        return 'Хоосон байна';
+                      }
+                      if (text.length < 2) {
+                        return 'Богино байна ';
+                      }
+                      return null;
+                    },
+                    onChanged: (text) {
+                      setState(() => title = text);
+                    },
+                  ),
+                  const SizedBox(height: 12),
+
+                  // const SizedBox(height: 12),
+
+                  TextFormField(
+                    controller: co2,
+                    decoration: InputDecoration(
+                      fillColor: Colors.white,
+                      filled: true,
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1.0,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Colors.green,
+                          width: 1,
+                        ),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Colors.red,
+                          width: 1,
+                        ),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                      ),
+                      prefixIcon: const Icon(Icons.person),
+                      labelText: 'Зохиогч',
+                    ),
+                    validator: (text) {
+                      if (text == null || text.isEmpty) {
+                        return 'Хоосон байна';
+                      }
+                      if (text.length < 2) {
+                        return 'Богино байна ';
+                      }
+                      return null;
+                    },
+                    onChanged: (text) {
+                      setState(() => author = text);
+                      //    _validate();
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: co3,
+                    maxLines: 4,
+                    minLines: 1,
+                    maxLength: 200,
+                    decoration: InputDecoration(
+                      fillColor: Colors.white,
+                      filled: true,
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1.0,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Colors.green,
+                          width: 1,
+                        ),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Colors.red,
+                          width: 1,
+                        ),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                      ),
+                      prefixIcon: const Icon(Icons.description),
+                      labelText: 'Тайлбар',
+                    ),
+                    validator: (text) {
+                      if (text == null || text.isEmpty) {
+                        return 'Хоосон байна';
+                      }
+                      if (text.length < 2) {
+                        return 'Богино байна ';
+                      }
+                      return null;
+                    },
+                    onChanged: (text) {
+                      setState(() => description = text);
+                      //    _validate();
+                    },
+                  ),
+                  // const SizedBox(height: 12),
+
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: co4,
+                    decoration: InputDecoration(
+                      fillColor: Colors.white,
+                      filled: true,
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1.0,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Colors.green,
+                          width: 1,
+                        ),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Colors.red,
+                          width: 1,
+                        ),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                      ),
+                      prefixIcon: const Icon(Icons.location_pin),
+                      labelText: 'Байршил',
+                    ),
+                    validator: (text) {
+                      if (text == null || text.isEmpty) {
+                        return 'Хоосон байна';
+                      }
+                      if (text.length < 2) {
+                        return 'Богино байна ';
+                      }
+                      return null;
+                    },
+                    onChanged: (text) {
+                      setState(() => location = text);
+                      //    _validate();
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 200,
+                    child: GoogleMap(
+                      scrollGesturesEnabled: true,
+                      myLocationButtonEnabled: false,
+                      zoomControlsEnabled: false,
+                      initialCameraPosition: initialCameraPosition,
+                      onMapCreated: (controller) => googleMapController = controller,
+                      markers: marker != null ? {marker!} : {},
+                      onTap: (position) {
+                        setState(() {
+                          Marker newMarker = Marker(
+                            draggable: true,
+                            markerId: MarkerId(position.toString()),
+                            icon:
+                                BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueMagenta),
+                            position: position,
+                          );
+                          marker = newMarker;
+                          latitude = position.latitude.toString();
+                          longitude = position.longitude.toString();
+                        });
                       },
-                      onChanged: (text) {
-                        setState(() => location = text);
-                        //    _validate();
-                      },
                     ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      height: 200,
-                      child: GoogleMap(
-                        scrollGesturesEnabled: true,
-                        myLocationButtonEnabled: false,
-                        zoomControlsEnabled: false,
-                        initialCameraPosition: initialCameraPosition,
-                        onMapCreated: (controller) => googleMapController = controller,
-                        markers: {
-                          Marker(
-                            markerId: const MarkerId('book.id.toString()'),
-                            visible: true,
-                            infoWindow: const InfoWindow(
-                              title: 'book.title',
-                            ),
-                            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-                            position: const LatLng(47.918, (106.914)),
-                          ),
-                        },
-                        onTap: (argument) {
-                          setState(() {
-                            latitude = argument.latitude.toString();
-                            longitude = argument.longitude.toString();
-                          });
-                        },
-                      ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Container(
+                    height: 40,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10.0),
+                      color: const Color.fromARGB(255, 153, 136, 205),
                     ),
-                    const SizedBox(
-                      height: 10,
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                          elevation: MaterialStateProperty.all(0),
+                          backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent)),
+                      child: const Text('Ном үүсгэх'),
+                      onPressed: () => _submit(),
                     ),
-                    Container(
-                      height: 40,
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
-                      child: ElevatedButton(
-                        style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all<Color>(
-                          const Color.fromARGB(255, 77, 195, 213),
-                        )),
-                        child: const Text('Ном үүсгэх'),
-                        onPressed: () => _submit(),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(
+                    height: 100,
+                  )
+                ]),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

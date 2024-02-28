@@ -14,8 +14,8 @@ class Book {
   String longitude;
   String? image;
   int? userId;
-  User user;
-  Category category;
+  User? user;
+  Category? category;
   String createdAt;
   Book({
     required this.id,
@@ -27,8 +27,8 @@ class Book {
     required this.longitude,
     this.image,
     this.userId,
-    required this.user,
-    required this.category,
+    this.user,
+    this.category,
     required this.createdAt,
   });
 
@@ -73,8 +73,8 @@ class Book {
       'longitude': longitude,
       'image': image,
       'userId': userId,
-      'user': user.toMap(),
-      'category': category.toMap(),
+      'user': user?.toMap(),
+      'category': category?.toMap(),
       'createdAt': createdAt,
     };
   }
@@ -90,8 +90,10 @@ class Book {
       longitude: map['longitude'] as String,
       image: map['image'] != null ? map['image'] as String : null,
       userId: map['userId'] != null ? map['userId'] as int : null,
-      user: User.fromMap(map['user'] as Map<String, dynamic>),
-      category: Category.fromMap(map['category'] as Map<String, dynamic>),
+      user: map['user'] != null ? User.fromMap(map['user'] as Map<String, dynamic>) : null,
+      category: map['category'] != null
+          ? Category.fromMap(map['category'] as Map<String, dynamic>)
+          : null,
       createdAt: map['createdAt'] as String,
     );
   }

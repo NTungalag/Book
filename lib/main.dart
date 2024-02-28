@@ -1,3 +1,5 @@
+import 'package:diplom/blocs/book.bloc.dart';
+import 'package:diplom/repositories/user_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -24,12 +26,14 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   late final AuthenticationRepository _authenticationRepository;
   late final BookRepository _bookRepository;
+  late final UserRepository _userRepository;
 
   @override
   void initState() {
     super.initState();
     _authenticationRepository = AuthenticationRepository();
     _bookRepository = BookRepository();
+    _userRepository = UserRepository();
   }
 
   @override
@@ -55,7 +59,10 @@ class _AppState extends State<App> {
               create: (BuildContext context) => UserBloc(
                     authenticationRepository: _authenticationRepository,
                     bookRepository: _bookRepository,
+                    userRepository: _userRepository,
                   )),
+          BlocProvider<BookBloc>(
+              create: (BuildContext context) => BookBloc(bookRepository: _bookRepository)),
         ],
         child: const AppView(),
       ),
