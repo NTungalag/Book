@@ -1,14 +1,14 @@
-import 'package:diplom/events/book_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:diplom/blocs/book.bloc.dart';
 import 'package:diplom/blocs/user_bloc.dart';
+import 'package:diplom/events/book_event.dart';
 import 'package:diplom/models/book_model.dart';
 import 'package:diplom/models/user_model.dart';
 import 'package:diplom/repositories/book_repository.dart';
 import 'package:diplom/screens/book.dart';
-import 'package:diplom/screens/search_book.dart';
+import 'package:diplom/screens/search_book_screen.dart';
 import 'package:diplom/states/book_state.dart';
 
 class Home extends StatefulWidget {
@@ -105,8 +105,8 @@ class _HomeState extends State<Home> {
                           ),
                           const SizedBox(height: 8),
                           GestureDetector(
-                            onTap: () => Navigator.push(
-                                context, MaterialPageRoute(builder: (context) => SearchB())),
+                            onTap: () => Navigator.push(context,
+                                MaterialPageRoute(builder: (context) => SearchBookScreen())),
                             child: TextField(
                               decoration: InputDecoration(
                                 filled: true,
@@ -158,7 +158,7 @@ class _HomeState extends State<Home> {
                                         context,
                                         MaterialPageRoute(
                                             builder: (context) =>
-                                                SearchB(category: state.categories[i]))),
+                                                SearchBookScreen(category: state.categories[i]))),
                                     child: Container(
                                       // padding:
                                       //     const EdgeInsets.symmetric(horizontal: 5, vertical: 5),

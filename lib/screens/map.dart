@@ -11,7 +11,7 @@ import 'package:diplom/models/book_model.dart';
 import 'package:diplom/models/user_model.dart';
 import 'package:diplom/repositories/book_repository.dart';
 import 'package:diplom/screens/chat.dart';
-import 'package:diplom/screens/search_book.dart';
+import 'package:diplom/screens/search_book_screen.dart';
 import 'package:diplom/states/user_state.dart';
 
 class MapScreen extends StatefulWidget {
@@ -283,7 +283,8 @@ class _MapScreenState extends State<MapScreen> {
       // ),
       floatingActionButton: Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
         GestureDetector(
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SearchB())),
+          onTap: () =>
+              Navigator.push(context, MaterialPageRoute(builder: (context) => SearchBookScreen())),
           child: Container(
             margin: const EdgeInsets.all(16),
             child: TextField(

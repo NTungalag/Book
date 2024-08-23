@@ -15,6 +15,14 @@ import 'package:diplom/events/book_event.dart';
 import 'package:diplom/models/category_model.dart';
 import 'package:diplom/states/book_state.dart';
 
+import 'package:diplom/blocs/book.bloc.dart';
+import 'package:diplom/blocs/user_bloc.dart';
+import 'package:diplom/events/book_event.dart';
+import 'package:diplom/events/user_events.dart';
+import 'package:diplom/models/category_model.dart';
+import 'package:diplom/models/user_model.dart';
+import 'package:diplom/states/book_state.dart';
+
 class CreateBookScreen extends StatefulWidget {
   const CreateBookScreen({super.key});
 
@@ -150,9 +158,9 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
     }
   }
 
-  void _validate() {
-    _formKey.currentState!.validate();
-  }
+  // void _validate() {
+  //   _formKey.currentState!.validate();
+  // }
 
   @override
   Widget build(BuildContext context) {

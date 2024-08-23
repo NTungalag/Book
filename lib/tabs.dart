@@ -7,11 +7,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:diplom/blocs/book.bloc.dart';
 import 'package:diplom/events/book_event.dart';
 import 'package:diplom/repositories/book_repository.dart';
+import 'package:diplom/screens/chat_rooms.dart';
 import 'package:diplom/screens/create_book.dart';
 import 'package:diplom/screens/homeScreen.dart';
 import 'package:diplom/screens/map.dart';
 import 'package:diplom/screens/profile.dart';
-import 'package:diplom/screens/search_book.dart';
 
 var tabs = [
   const Home(),
