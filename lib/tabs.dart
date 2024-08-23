@@ -1,4 +1,6 @@
+import 'package:diplom/blocs/user_bloc.dart';
 import 'package:diplom/screens/chat.dart';
+import 'package:diplom/screens/chat_rooms.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -13,10 +15,12 @@ import 'package:diplom/screens/search_book.dart';
 
 var tabs = [
   const Home(),
-  const SearchBook(),
+  // const SearchBook(),
   const MapScreen(),
   const CreateBookScreen(),
-  const ChatScreen(),
+  // const ChatScreen(),
+  const ChatRooms(),
+  // const ChatR(),
   const ProfilePage(),
 ];
 
@@ -40,6 +44,7 @@ class _Tabs extends State<Tabs> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       backgroundColor: Colors.grey.shade100,
       body: MultiRepositoryProvider(
         providers: [
@@ -67,38 +72,27 @@ class _Tabs extends State<Tabs> {
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined, size: 25),
+            icon: Icon(Icons.home_outlined, size: 23),
             backgroundColor: Colors.white,
             label: 'Нүүр',
           ),
           BottomNavigationBarItem(
-            icon: Icon(
-              Icons.search,
-              size: 25,
-            ),
-            backgroundColor: Colors.white,
-            label: 'Хайлт',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.map_outlined,
-              size: 25,
-            ),
+            icon: Icon(Icons.map_outlined, size: 23),
             backgroundColor: Colors.white,
             label: 'Танд ойр',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.add_box_outlined, size: 25),
+            icon: Icon(Icons.add_box_outlined, size: 23),
             label: 'Ном нэмэх',
             backgroundColor: Colors.white,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat, size: 25),
+            icon: Icon(Icons.chat, size: 23),
             label: 'Чат',
             backgroundColor: Colors.white,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline, size: 25),
+            icon: Icon(Icons.person_outline, size: 23),
             label: 'Профайл',
             backgroundColor: Colors.white,
           ),

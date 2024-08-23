@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
 import 'package:diplom/models/book_model.dart';
-
-import 'package:location/location.dart';
 
 class Map extends StatefulWidget {
   final Book book;
@@ -15,51 +11,14 @@ class Map extends StatefulWidget {
 }
 
 class _MapScreenState extends State<Map> {
-  final _controllerSearch = TextEditingController();
-
-  late bool _serviceEnabled;
-  late PermissionStatus _permissionGranted;
-
-  LocationData? _userLocation;
-  static const initialCameraPosition = CameraPosition(
-    target: LatLng(47.917, 106.918),
-    zoom: 15,
-  );
+  late CameraPosition initialCameraPosition;
 
   late GoogleMapController googleMapController;
 
   late Marker book;
 
-  Future<void> _getUserLocation() async {
-    Location location = Location();
-
-    // Check if location service is enable
-    _serviceEnabled = await location.serviceEnabled();
-    if (!_serviceEnabled) {
-      _serviceEnabled = await location.requestService();
-      if (!_serviceEnabled) {
-        return;
-      }
-    }
-
-    // Check if permission is granted
-    _permissionGranted = await location.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await location.requestPermission();
-      if (_permissionGranted != PermissionStatus.granted) {
-        return;
-      }
-    }
-
-    final locationData = await location.getLocation();
-    setState(() {
-      _userLocation = locationData;
-    });
-  }
-
   @override
   void initState() {
-    // books = context.read<BookBloc>().state.books.cast<Book>();
     super.initState();
     book = Marker(
       markerId: MarkerId(widget.book.id.toString()),
@@ -70,7 +29,14 @@ class _MapScreenState extends State<Map> {
         double.parse(widget.book.longitude),
       ),
     );
-    if (_userLocation == null) _getUserLocation();
+
+    initialCameraPosition = CameraPosition(
+      target: LatLng(
+        double.tryParse(widget.book.latitude)!,
+        double.tryParse(widget.book.longitude)!,
+      ),
+      zoom: 15,
+    );
   }
 
   @override
@@ -81,7 +47,6 @@ class _MapScreenState extends State<Map> {
 
   @override
   Widget build(BuildContext context) {
-    _getUserLocation();
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -91,7 +56,7 @@ class _MapScreenState extends State<Map> {
         ),
         title: Text(
           widget.book.title,
-          style: TextStyle(color: Colors.black),
+          style: const TextStyle(fontSize: 22, color: Colors.black, fontWeight: FontWeight.w600),
         ),
         backgroundColor: Colors.white,
       ),
@@ -102,20 +67,11 @@ class _MapScreenState extends State<Map> {
         myLocationButtonEnabled: true,
         zoomControlsEnabled: false,
         initialCameraPosition: initialCameraPosition,
-        onMapCreated: (controller) => googleMapController = controller,
+        onMapCreated: (controller) {
+          googleMapController = controller;
+          googleMapController.showMarkerInfoWindow(MarkerId(widget.book.id.toString()));
+        },
         markers: {book},
-        onLongPress: (argument) {
-          // print(double.parse(books.first.latitude));
-          // print(double.parse(books.first.longitude));
-        },
-        onTap: (argument) {
-          // print(argument);
-        },
-        onCameraMove: (position) {
-          // print(position);
-        },
-        onCameraMoveStarted: () {},
-        onCameraIdle: () {},
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => googleMapController

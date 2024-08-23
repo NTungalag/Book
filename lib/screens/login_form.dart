@@ -21,7 +21,7 @@ class _LoginFormState extends State<LoginForm> {
   @override
   void initState() {
     super.initState();
-    _passwordVisible = false;
+    _passwordVisible = true;
   }
 
   @override
@@ -50,10 +50,26 @@ class _LoginFormState extends State<LoginForm> {
               TextFormField(
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
-                  icon: Icon(Icons.email_rounded),
+                  icon: Icon(
+                    Icons.email_rounded,
+                    color: Colors.blueGrey,
+                  ),
                   labelText: 'Цахим хаяг',
+                  labelStyle: TextStyle(color: Colors.blueGrey),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.blueGrey,
+                    ),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Color.fromARGB(255, 153, 136, 205),
+                    ),
+                  ),
                 ),
-                onChanged: (value) => email = value,
+                onChanged: (value) => setState(() {
+                  email = value;
+                }),
                 onSaved: (String? value) {},
                 validator: (String? value) {
                   return (value != null && value.contains('@')) ? 'Do not use the @ char.' : null;
@@ -66,11 +82,28 @@ class _LoginFormState extends State<LoginForm> {
                       onTap: () => setState(() {
                             _passwordVisible = !_passwordVisible;
                           }),
-                      child: Icon(_passwordVisible ? Icons.visibility_off : Icons.visibility)),
-                  icon: const Icon(Icons.security_update),
+                      child: Icon(
+                        _passwordVisible ? Icons.visibility_off : Icons.visibility,
+                        color: Colors.blueGrey,
+                      )),
+                  icon: const Icon(
+                    Icons.security_update,
+                    color: Colors.blueGrey,
+                  ),
                   labelText: 'Нууц үг',
+                  labelStyle: const TextStyle(color: Colors.blueGrey),
+                  enabledBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blueGrey),
+                  ),
+                  focusedBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Color.fromARGB(255, 153, 136, 205),
+                    ),
+                  ),
                 ),
-                onChanged: (value) => password = value,
+                onChanged: (value) => setState(() {
+                  password = value;
+                }),
                 onSaved: (String? value) {},
                 validator: (String? value) {
                   return (value != null && value.contains('@')) ? 'Do not use the @ char.' : null;
@@ -80,13 +113,34 @@ class _LoginFormState extends State<LoginForm> {
               const SizedBox(
                 height: 20,
               ),
-              ElevatedButton(
-                  onPressed: () => context.read<UserBloc>().add(LoginSubmitted(password, email)),
-                  child: const Text('Нэвтрэх')),
+              Container(
+                width: double.infinity,
+                child: ElevatedButton(
+                    style: ButtonStyle(
+                      elevation: MaterialStateProperty.all(0),
+                      backgroundColor: MaterialStateProperty.all(email == '' || password == ''
+                          ? Colors.black12
+                          : const Color.fromARGB(255, 153, 136, 205)),
+                    ),
+                    onPressed: () => email.trim() == '' || password.trim() == ''
+                        ? ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Нэр эсвэл нууц үг хоосон байна')),
+                          )
+                        : context.read<UserBloc>().add(LoginSubmitted(password, email)),
+                    child: const Text('Нэвтрэх')),
+              ),
+              const SizedBox(
+                height: 50,
+              ),
               GestureDetector(
                   onTap: () => Navigator.push(
-                      context, MaterialPageRoute(builder: (context) => const Register())),
-                  child: const Text('Бүртгүүлэх'))
+                      context, MaterialPageRoute(builder: (context) => const RegisterScreen())),
+                  child: const Text(
+                    'Бүртгүүлэх ',
+                    style: TextStyle(
+                      decoration: TextDecoration.underline,
+                    ),
+                  ))
             ],
           ),
         ),

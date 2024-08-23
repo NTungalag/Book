@@ -5,8 +5,7 @@ import 'package:diplom/models/category_model.dart';
 import 'package:http/http.dart';
 
 class BookRepository {
-  // String userUrl = 'http://localhost:8000/api/books';
-  String limit = '25';
+  String limit = '100';
   String userUrl =
       'http://localhost:8000/api/books?select=title author id description location latitude longitude image userId createdAt';
 
@@ -17,6 +16,7 @@ class BookRepository {
     String? longitude,
     String? title,
     String? page,
+    String? sort,
   }) async {
     String url = userUrl;
     if (userId != null) {
@@ -28,7 +28,9 @@ class BookRepository {
     if (categoryId != null) {
       url = '$userUrl&page=$page!&categoryId=$categoryId';
     }
-    print(url);
+    if (sort != null) {
+      url = '$url&sort=$sort';
+    }
 
     Response response = await get(
       Uri.parse(url),
@@ -36,26 +38,13 @@ class BookRepository {
 
     if (response.statusCode == 200) {
       List data = json.decode(response.body)['data'];
-      // print(data);
 
       List<Book> books = data.map((val) => Book.fromMap(val)).toList();
-      print(books.length);
       return books;
     } else {
       throw Exception(response.reasonPhrase);
     }
   }
-
-  Future<bool> deleteBook({required String BookId}) async {
-    await Future.delayed(const Duration(seconds: 1));
-    return true;
-  }
-
-  // Future<Book> getBook(String bookId) async {
-  //   /// delete from keystore/keychain
-  //   await Future.delayed(const Duration(seconds: 1));
-  //   return Book();
-  // }
 
   Future<List<Category>> getCategories() async {
     Response response = await get(
@@ -71,7 +60,7 @@ class BookRepository {
     }
   }
 
-  Future<Book> createBook({
+  Future<bool> createBook({
     required String title,
     required String author,
     required String description,
@@ -101,9 +90,55 @@ class BookRepository {
     );
     if (response.statusCode == 200) {
       var data = json.decode(response.body)['data'];
-      Book book = Book.fromMap(data);
 
-      return book;
+      return true;
+    } else {
+      throw Exception(response.reasonPhrase);
+    }
+  }
+
+  Future<Book> updateBook({
+    required int bookId,
+    String? title,
+    String? author,
+    String? description,
+    String? location,
+    String? longitude,
+    String? latitude,
+    String? image,
+    String? categoryId,
+  }) async {
+    Response response = await put(
+      Uri.parse('http://localhost:8000/api/books/$bookId'),
+      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode(image == null
+          ? {
+              'title': title!,
+              'author': author!,
+              'description': description!,
+              'location': location!,
+              'latitude': latitude!,
+              'longitude': longitude!,
+              // 'image': image!,
+              'categoryId': categoryId!,
+            }
+          : {
+              'title': title!,
+              'author': author!,
+              'description': description!,
+              'location': location!,
+              'latitude': latitude!,
+              'longitude': longitude!,
+              'image': image,
+              'categoryId': categoryId!,
+            }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = json.decode(response.body)['data'];
+      Book user = Book.fromMap(data);
+
+      return user;
     } else {
       throw Exception(response.reasonPhrase);
     }

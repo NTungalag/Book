@@ -7,9 +7,8 @@ import 'package:http/http.dart';
 enum AuthenticationStatus { unknown, authenticated, unauthenticated }
 
 class AuthenticationRepository {
-  // User? _user;
   final _controller = StreamController<AuthenticationStatus>();
-  String userUrl = 'http://localhost:8000/api/users/login';
+  String userUrl = 'http://localhost:8000/api/users';
   Stream<AuthenticationStatus> get status async* {
     await Future<void>.delayed(const Duration(seconds: 1));
     yield AuthenticationStatus.unauthenticated;
@@ -20,11 +19,14 @@ class AuthenticationRepository {
     required String username,
     required String password,
   }) async {
+    print(password);
+
     Response response = await post(
-      Uri.parse(userUrl),
+      Uri.parse('$userUrl/login'),
       headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
       body: jsonEncode(<String, String>{'email': username, 'password': password}),
     );
+    print(response.statusCode.toString());
 
     if (response.statusCode == 200) {
       final user = jsonDecode(response.body)['user'];
@@ -32,18 +34,19 @@ class AuthenticationRepository {
 
       return u;
     } else {
+      print('fail????');
+
       throw Exception(response.reasonPhrase);
     }
   }
 
   Future<User> logOut({
-    required String username,
-    required String password,
+    required int userId,
   }) async {
     Response response = await post(
-      Uri.parse(userUrl),
+      Uri.parse('$userUrl/logout'),
       headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
-      body: jsonEncode(<String, String>{'email': username, 'password': password}),
+      body: jsonEncode(<String, String>{'userId': userId.toString()}),
     );
 
     if (response.statusCode == 200) {
@@ -60,11 +63,18 @@ class AuthenticationRepository {
   Future<User> register({
     required String username,
     required String password,
+    required String email,
   }) async {
+    print(password);
+
     Response response = await post(
-      Uri.parse(userUrl),
+      Uri.parse('$userUrl/register'),
       headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
-      body: jsonEncode(<String, String>{'email': username, 'password': password}),
+      body: jsonEncode(<String, String>{
+        'email': username,
+        'password': password,
+        'name': username,
+      }),
     );
 
     if (response.statusCode == 200) {
@@ -77,13 +87,6 @@ class AuthenticationRepository {
       throw Exception(response.reasonPhrase);
     }
   }
-
-  // void logOut() {
-  //   _controller.add(AuthenticationStatus.unauthenticated);
-  // }
-  // Future<User?> getUser() async {
-  //   return _user;
-  // }
 
   void dispose() => _controller.close();
 }

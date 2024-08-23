@@ -2,17 +2,20 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:diplom/blocs/book.bloc.dart';
-import 'package:diplom/events/book_event.dart';
-import 'package:diplom/repositories/book_repository.dart';
-import 'package:diplom/states/book_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart';
 
+import 'package:diplom/blocs/book.bloc.dart';
+import 'package:diplom/events/book_event.dart';
 import 'package:diplom/models/book_model.dart';
 import 'package:diplom/models/category_model.dart';
+import 'package:diplom/models/user_model.dart';
+import 'package:diplom/repositories/book_repository.dart';
 import 'package:diplom/screens/book.dart';
+import 'package:diplom/states/book_state.dart';
+
+import '../blocs/user_bloc.dart';
 
 class SearchBook extends StatefulWidget {
   final Category? category;
@@ -47,6 +50,7 @@ class SearchState extends State<SearchBook> {
   final _controllerSearch = TextEditingController();
   final limit = 25;
   late Category? selectedCategory;
+  late User user;
   int page = 1;
   bool hasMore = true;
   String searchText = '';
@@ -56,20 +60,6 @@ class SearchState extends State<SearchBook> {
 
   String urlBook =
       'http://localhost:8000/api/books?select=title author id image createdAt description location latitude longitude userId&sort=id&limit=6';
-
-  // Future<List<Book>> getAllBook() async {
-  //   try {
-  //     final response = await get(Uri.parse(urlBook));
-  //     if (response.statusCode == 200) {
-  //       List<Book> list = parse(response.body);
-  //       return list;
-  //     } else {
-  //       throw Exception('Error');
-  //     }
-  //   } catch (e) {
-  //     throw Exception(e.toString());
-  //   }
-  // }
 
   static List<Book> parse(String responseBody) {
     List parsed = json.decode(responseBody)['data'];
@@ -86,7 +76,6 @@ class SearchState extends State<SearchBook> {
       url =
           '$urlBook&page=$page&title=$searchText&op=cn${selectedCategory == null ? '' : '&categoryId=${selectedCategory!.id}'}';
     }
-    print(url);
 
     final response = await get(Uri.parse(url));
     if (response.statusCode == 200) {
@@ -116,6 +105,7 @@ class SearchState extends State<SearchBook> {
     //   });
     // });
     selectedCategory = widget.category;
+    user = context.read<UserBloc>().state.user!;
 
     fetch();
     controller.addListener(() {
@@ -140,13 +130,12 @@ class SearchState extends State<SearchBook> {
       url =
           '$urlBook&title=$searchText&op=cn${selectedCategory == null ? '' : '&categoryId=${selectedCategory!.id}'}';
     }
-    print(url);
 
     final response = await get(Uri.parse('$url&page=1'));
     if (response.statusCode == 200) {
       List<Book> list = parse(response.body);
       List<Book> bookList = list;
-      print(bookList.length);
+
       setState(() {
         page++;
         books.addAll(bookList);
@@ -167,7 +156,7 @@ class SearchState extends State<SearchBook> {
           elevation: 0,
           title: const Text(
             'Хайлт',
-            style: TextStyle(fontSize: 25, color: Colors.black, fontWeight: FontWeight.w600),
+            style: TextStyle(fontSize: 22, color: Colors.black, fontWeight: FontWeight.w600),
           ),
           backgroundColor: Colors.white,
           leading: IconButton(
@@ -176,6 +165,7 @@ class SearchState extends State<SearchBook> {
           ),
         ),
         body: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             selectedCategory != null
                 ? Container(
@@ -183,11 +173,11 @@ class SearchState extends State<SearchBook> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10.0),
                       border: Border.all(
-                        color: Colors.black,
+                        color: Colors.grey,
                         width: 1,
                         style: BorderStyle.solid,
                       ),
-                      color: Colors.white12,
+                      color: Colors.white,
                     ),
                     margin: const EdgeInsets.only(left: 16, top: 8, right: 16, bottom: 0),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -205,9 +195,10 @@ class SearchState extends State<SearchBook> {
                       icon: const Padding(
                           padding: EdgeInsets.only(left: 20), child: Icon(Icons.arrow_drop_down)),
                       iconEnabledColor: Colors.black,
-                      style: const TextStyle(color: Colors.black, fontSize: 20),
-                      dropdownColor: Colors.redAccent,
-                      underline: Container(),
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
+                      dropdownColor: Colors.white,
+                      underline: SizedBox(),
+                      borderRadius: BorderRadius.circular(10.0),
                       isExpanded: true,
                     ),
                   )
@@ -277,7 +268,7 @@ class SearchState extends State<SearchBook> {
                       child: ListView.builder(
                         controller: controller,
                         shrinkWrap: true,
-                        physics: const ClampingScrollPhysics(),
+                        physics: const AlwaysScrollableScrollPhysics(),
                         padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 5),
                         itemCount: books.length + 1,
                         itemBuilder: (BuildContext context, int index) {
@@ -288,6 +279,7 @@ class SearchState extends State<SearchBook> {
                                 MaterialPageRoute(
                                   builder: (context) => BookScreen(
                                     book: books[index],
+                                    user: user,
                                   ),
                                 ),
                               ),
@@ -312,7 +304,7 @@ class SearchState extends State<SearchBook> {
                                         ),
                                       ),
                                       title: Text(
-                                        '${books[index].title}  |  ${books[index].category.name}',
+                                        '${books[index].title}  |  ${books[index].category!.name}',
                                         style: const TextStyle(fontSize: 16),
                                       ),
                                       subtitle: Text(
@@ -366,11 +358,13 @@ class SearchB extends StatefulWidget {
 
 class _SearchBState extends State<SearchB> {
   late final BookRepository _bookRepository;
+  late User user;
 
   @override
   void initState() {
     super.initState();
     _bookRepository = BookRepository();
+    user = context.read<UserBloc>().state.user!;
   }
 
   @override

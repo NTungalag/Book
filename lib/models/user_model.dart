@@ -8,6 +8,7 @@ class User extends Equatable {
   final String? name;
   final String email;
   final String? role;
+  final String? image;
   final String? about;
   final int? chatRoomId;
 
@@ -15,6 +16,7 @@ class User extends Equatable {
     required this.id,
     this.name,
     required this.email,
+    this.image,
     this.role,
     this.about,
     this.chatRoomId,
@@ -25,6 +27,7 @@ class User extends Equatable {
     String? name,
     String? email,
     String? role,
+    String? image,
     String? about,
     int? chatRoomId,
   }) {
@@ -33,6 +36,7 @@ class User extends Equatable {
       name: name ?? this.name,
       email: email ?? this.email,
       role: role ?? this.role,
+      image: image ?? this.image,
       about: about ?? this.about,
       chatRoomId: chatRoomId ?? this.chatRoomId,
     );
@@ -43,6 +47,7 @@ class User extends Equatable {
       'id': id,
       'name': name,
       'email': email,
+      'image': image,
       'role': role,
       'about': about,
       'chatRoomId': chatRoomId,
@@ -55,6 +60,7 @@ class User extends Equatable {
       name: map['name'] != null ? map['name'] as String : null,
       email: map['email'] as String,
       role: map['role'] != null ? map['role'] as String : null,
+      image: map['image'] != null ? map['image'] as String : null,
       about: map['about'] != null ? map['about'] as String : null,
       chatRoomId: map['chatRoomId'] != null ? map['chatRoomId'] as int : null,
     );
@@ -66,7 +72,7 @@ class User extends Equatable {
 
   @override
   String toString() {
-    return 'User(id: $id, name: $name, email: $email, role: $role, about: $about, chatRoomId: $chatRoomId)';
+    return 'User(id: $id, name: $name, email: $email, role: $role,image: $image, about: $about, chatRoomId: $chatRoomId)';
   }
 
   @override
@@ -77,6 +83,7 @@ class User extends Equatable {
         other.name == name &&
         other.email == email &&
         other.role == role &&
+        other.image == image &&
         other.about == about &&
         other.chatRoomId == chatRoomId;
   }
@@ -87,6 +94,7 @@ class User extends Equatable {
         name.hashCode ^
         email.hashCode ^
         role.hashCode ^
+        image.hashCode ^
         about.hashCode ^
         chatRoomId.hashCode;
   }
@@ -94,5 +102,5 @@ class User extends Equatable {
   static const empty = User(email: '', id: 0);
 
   @override
-  List<Object?> get props => [id, name, email, role, about, chatRoomId];
+  List<Object?> get props => [id, name, email, role, about, chatRoomId, image];
 }

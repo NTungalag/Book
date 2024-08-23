@@ -43,8 +43,39 @@ class GetBooks extends BookEvent {
   final String? longitude;
   final String? page;
 
-  const GetBooks(
-      {this.categoryId, this.userId, this.title, this.latitude, this.longitude, this.page});
+  const GetBooks({
+    this.categoryId,
+    this.userId,
+    this.title,
+    this.latitude,
+    this.longitude,
+    this.page,
+  });
+}
+
+class UpdateBook extends BookEvent {
+  final int bookId;
+
+  final String? title;
+  final String? description;
+  final String? author;
+  final String? location;
+  final String? latitude;
+  final String? longitude;
+  final String? image;
+  final String? categoryId;
+
+  const UpdateBook({
+    required this.bookId,
+    this.title,
+    this.description,
+    this.author,
+    this.location,
+    this.latitude,
+    this.longitude,
+    this.image,
+    this.categoryId,
+  });
 }
 
 class GetCategories extends BookEvent {}

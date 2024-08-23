@@ -1,3 +1,4 @@
+import 'package:diplom/repositories/user_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -9,6 +10,8 @@ import 'package:diplom/screens/login_screen.dart';
 import 'package:diplom/screens/splashScreen.dart';
 import 'package:diplom/states/authentication_state.dart';
 import 'package:diplom/tabs.dart';
+
+import 'blocs/book.bloc.dart';
 
 void main() {
   runApp(const App());
@@ -24,12 +27,14 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   late final AuthenticationRepository _authenticationRepository;
   late final BookRepository _bookRepository;
+  late final UserRepository _userRepository;
 
   @override
   void initState() {
     super.initState();
     _authenticationRepository = AuthenticationRepository();
     _bookRepository = BookRepository();
+    _userRepository = UserRepository();
   }
 
   @override
@@ -49,13 +54,18 @@ class _AppState extends State<App> {
       child: MultiBlocProvider(
         providers: [
           BlocProvider<AuthenticationBloc>(
-              create: (BuildContext context) =>
-                  AuthenticationBloc(authenticationRepository: _authenticationRepository)),
+            create: (BuildContext context) =>
+                AuthenticationBloc(authenticationRepository: _authenticationRepository),
+          ),
           BlocProvider<UserBloc>(
-              create: (BuildContext context) => UserBloc(
-                    authenticationRepository: _authenticationRepository,
-                    bookRepository: _bookRepository,
-                  )),
+            create: (BuildContext context) => UserBloc(
+              authenticationRepository: _authenticationRepository,
+              bookRepository: _bookRepository,
+              userRepository: _userRepository,
+            ),
+          ),
+          BlocProvider<BookBloc>(
+              create: (BuildContext context) => BookBloc(bookRepository: _bookRepository)),
         ],
         child: const AppView(),
       ),
